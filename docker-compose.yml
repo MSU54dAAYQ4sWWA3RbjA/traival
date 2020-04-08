@@ -1,0 +1,39 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/rails/Dockerfile
+    command: bundle exec unicorn -p 8080 -c /app/config/unicorn.rb
+
+    ports:
+      - '8080:8080'
+    volumes:
+      - /var/tmp
+      - .:/app
+      - bundle_path:/bundle
+    environment:
+      - BUNDLE_PATH=/bundle
+    depends_on:
+      - db
+    extends:
+      file: ./docker/mysql/password.yml
+      service: password
+    tty: true
+    stdin_open: true
+
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+    ports:
+      - '3305:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+    extends:
+      file: ./docker/mysql/password.yml
+      service: password
+
+volumes:
+  db_data:
+  bundle_path:
